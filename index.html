@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tra cứu thông tin cá nhân</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #eef3f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 15px;
+    }
+
+    h1 {
+      color: #0078d7;
+      margin-bottom: 25px;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .search-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input[type="text"] {
+      padding: 12px 15px;
+      font-size: 16px;
+      width: 100%;
+      border: 2px solid #0078d7;
+      border-radius: 8px;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      background: #0078d7;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #005a9e;
+    }
+
+    .autocomplete-list {
+      position: absolute;
+      top: 48px;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-top: none;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 1000;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .autocomplete-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .autocomplete-item:hover {
+      background: #f0f0f0;
+    }
+
+    .result {
+      margin-top: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 260px;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .info {
+      margin: 8px 0;
+      word-break: break-word;
+    }
+
+    a {
+      color: #0078d7;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 500px) {
+      h1 { font-size: 20px; }
+      .card { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Tra cứu thông tin cá nhân</h1>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Nhập họ tên...">
+    <div id="autocomplete" class="autocomplete-list"></div>
+  </div>
+  <button onclick="search()">Tìm kiếm</button>
+  <div id="result" class="result"></div>
+
+  <script>
+    // 🌐 Dữ liệu mẫu - bạn có thể thay bằng fetch('data.json') nếu muốn lấy từ file
+    const data = [
+      {
+        "name": "Nguyễn Văn A",
+        "age": 22,
+        "facebook": "https://facebook.com/nguyenvana",
+        "instagram": "https://instagram.com/nguyenvana",
+        "phone": "0123456789"
+      },
+      {
+        "name": "Trần Thị B",
+        "age": 25,
+        "facebook": "https://facebook.com/tranthib",
+        "instagram": "https://instagram.com/tranthib",
+        "phone": "0987654321"
+      },
+      {
+        "name": "Phạm Minh C",
+        "age": 28,
+        "facebook": "https://facebook.com/phamminhc",
+        "instagram": "https://instagram.com/phamminhc",
+        "phone": "0909123456"
+      }
+    ];
+
+    const input = document.getElementById('searchInput');
+    const autocompleteDiv = document.getElementById('autocomplete');
+    const resultDiv = document.getElementById('result');
+
+    input.addEventListener('input', () => {
+      const val = input.value.trim().toLowerCase();
+      autocompleteDiv.innerHTML = '';
+      if(!val) return;
+
+      const suggestions = data.filter(p => p.name.toLowerCase().includes(val));
+      suggestions.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = p.name;
+        item.addEventListener('click', () => {
+          input.value = p.name;
+          autocompleteDiv.innerHTML = '';
+          search();
+        });
+        autocompleteDiv.appendChild(item);
+      });
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') {
+        autocompleteDiv.innerHTML = '';
+        search();
+      }
+    });
+
+    // 🔍 Hàm tìm kiếm và hiển thị dạng card
+    function search() {
+      const val = input.value.trim().toLowerCase();
+      resultDiv.innerHTML = '';
+      if(!val) return;
+
+      const results = data.filter(p => p.name.toLowerCase().includes(val));
+      if(results.length > 0) {
+        results.forEach(person => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="info"><strong>👤 Họ tên:</strong> ${person.name}</div>
+            <div class="info"><strong>🎂 Tuổi:</strong> ${person.age}</div>
+            <div class="info"><strong>📘 Facebook:</strong> <a href="${person.facebook}" target="_blank">${person.facebook}</a></div>
+            <div class="info"><strong>📸 Instagram:</strong> <a href="${person.instagram}" target="_blank">${person.instagram}</a></div>
+            <div class="info"><strong>📞 SĐT:</strong> ${person.phone}</div>
+          `;
+          resultDiv.appendChild(card);
+        });
+      } else {
+        resultDiv.innerHTML = `<div class="card"><div class="info">Không tìm thấy thông tin!</div></div>`;
+      }
+    }
+
+    // Ẩn gợi ý khi click ra ngoài
+    document.addEventListener('click', (e) => {
+      if (!document.querySelector('.search-container').contains(e.target)) {
+        autocompleteDiv.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+</html>
